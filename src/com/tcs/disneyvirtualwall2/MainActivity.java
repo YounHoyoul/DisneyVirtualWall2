@@ -68,9 +68,9 @@ public class MainActivity extends Activity implements CvCameraViewListener {
         mOpenCvCameraView.setCvCameraViewListener(this);
         mMatchImageUtil = new MatchImageUtil(this);
         
-        Intent intent = new Intent(MainActivity.this,PlayerViewDemoActivity.class);
-		intent.putExtra("video_uri", "3dnxG6fxXi8");
-    	startActivity(intent);
+        //Intent intent = new Intent(MainActivity.this,PlayerViewDemoActivity.class);
+		//intent.putExtra("video_uri", "3dnxG6fxXi8");
+    	//startActivity(intent);
     }
 
     @Override
