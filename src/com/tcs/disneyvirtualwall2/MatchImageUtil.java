@@ -39,7 +39,7 @@ public class MatchImageUtil {
 	private static final String TAG = "CAMERA::Activity";
 	private static final boolean D = false;
 	private static final int BOUNDARY = 35;
-	private static final double THRESHOLD = 30.0;
+	private static final double THRESHOLD = 50.0;
 	private static final boolean CACHED = true;
 	
 	private static Mat mSceneDescriptors = null;
@@ -55,17 +55,17 @@ public class MatchImageUtil {
 		R.drawable.disney_new_sample_1,
 		R.drawable.disney_new_sample_2,
 		R.drawable.disney_new_sample_3,
-		R.drawable.disney_new_sample_4,
+		R.drawable.disney_new_sample_4
 		
-		R.drawable.disney_sample_1_portrait,
-		R.drawable.disney_sample_2_portrait,
-		R.drawable.disney_sample_3_portrait,
-		R.drawable.disney_sample_4_portrait,
+		//R.drawable.disney_sample_1_portrait,
+		//R.drawable.disney_sample_2_portrait,
+		//R.drawable.disney_sample_3_portrait,
+		//R.drawable.disney_sample_4_portrait,
 		
-		R.drawable.disney_sample_1_portrait_50,
-		R.drawable.disney_sample_2_portrait_50,
-		R.drawable.disney_sample_3_portrait_50,
-		R.drawable.disney_sample_4_portrait_50
+		//R.drawable.disney_sample_1_portrait_50,
+		//R.drawable.disney_sample_2_portrait_50,
+		//R.drawable.disney_sample_3_portrait_50,
+		//R.drawable.disney_sample_4_portrait_50
 	};
 
 	
@@ -78,17 +78,17 @@ public class MatchImageUtil {
 		R.drawable.disney_new_sample_1,
 		R.drawable.disney_new_sample_2,
 		R.drawable.disney_new_sample_3,
-		R.drawable.disney_new_sample_4,
+		R.drawable.disney_new_sample_4
 		
-		R.drawable.disney_sample_1_landscape,
-		R.drawable.disney_sample_2_landscape,
-		R.drawable.disney_sample_3_landscape,
-		R.drawable.disney_sample_4_landscape,
+		//R.drawable.disney_sample_1_landscape,
+		//R.drawable.disney_sample_2_landscape,
+		//R.drawable.disney_sample_3_landscape,
+		//R.drawable.disney_sample_4_landscape,
 				
-		R.drawable.disney_sample_1_landscape_50,
-		R.drawable.disney_sample_2_landscape_50,
-		R.drawable.disney_sample_3_landscape_50,
-		R.drawable.disney_sample_4_landscape_50
+		//R.drawable.disney_sample_1_landscape_50,
+		//R.drawable.disney_sample_2_landscape_50,
+		//R.drawable.disney_sample_3_landscape_50,
+		//R.drawable.disney_sample_4_landscape_50
 	};
 	
 	private Activity mctx = null;
@@ -116,9 +116,11 @@ public class MatchImageUtil {
     	
     	mSceneDescriptors = null;
     	
-    	Log.v(TAG,"-------------START----------------");
+    	if(D) Log.v(TAG,"-------------START----------------");
     	
-    	long startTime = (new Date()).getTime();
+    	long startTime, endTime;
+    	
+    	if(D) startTime = (new Date()).getTime();
     	
     	double maxRate = 0.0;
     	int maxNdx = 0;
@@ -149,9 +151,9 @@ public class MatchImageUtil {
   	       	}
     	}
     	
-    	Log.v(TAG, "i="+maxNdx+",rate="+maxRate);
+    	if(D) Log.v(TAG, "i="+maxNdx+",rate="+maxRate);
     	
-    	long endTime = (new Date()).getTime();
+    	if(D) endTime = (new Date()).getTime();
     	
     	//ImageView imageScene = (ImageView)mctx.findViewById(R.id.secen);
     	//ImageView imageTrain = (ImageView)mctx.findViewById(R.id.target);
@@ -159,7 +161,7 @@ public class MatchImageUtil {
     	//imageScene.setImageBitmap(sceneImg);
     	//imageTrain.setImageBitmap(scaleAndTrun(BitmapFactory.decodeResource(mctx.getResources(), res[maxNdx])));
     	
-    	Log.v(TAG,"execute time = "+(endTime-startTime));
+    	if(D) Log.v(TAG,"execute time = "+(endTime-startTime));
     	
     	return ( maxRate > THRESHOLD ? maxNdx : -1 ) ;
 		

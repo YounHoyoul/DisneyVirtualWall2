@@ -15,16 +15,19 @@ import android.os.Message;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.hardware.Camera;
 import android.util.Log;
 import android.view.Menu;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
-public class MainActivity extends Activity implements CvCameraViewListener {
+public class MainActivity extends Activity implements CvCameraViewListener, OnClickListener {
 
 	private static final String TAG = "OCVSample::Activity";
-
+	
     private CameraBridgeViewBase mOpenCvCameraView;
     //private boolean              mIsJavaCamera = true;
     //private MenuItem             mItemSwitchCamera = null;
@@ -32,6 +35,8 @@ public class MainActivity extends Activity implements CvCameraViewListener {
     private MatchImageUtil 		mMatchImageUtil = null;
     
     private static boolean isRunThread = false;
+    
+    private Camera camera;
     
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -68,9 +73,13 @@ public class MainActivity extends Activity implements CvCameraViewListener {
         mOpenCvCameraView.setCvCameraViewListener(this);
         mMatchImageUtil = new MatchImageUtil(this);
         
+        
+        mOpenCvCameraView.setOnClickListener(this);
         //Intent intent = new Intent(MainActivity.this,PlayerViewDemoActivity.class);
 		//intent.putExtra("video_uri", "3dnxG6fxXi8");
     	//startActivity(intent);
+        
+        camera = Camera.open();
     }
 
     @Override
@@ -103,14 +112,13 @@ public class MainActivity extends Activity implements CvCameraViewListener {
     }
 
     public Mat onCameraFrame(Mat inputFrame) {
-    	Log.v(TAG,"onCameraFrame");
+    	//Log.v(TAG,"onCameraFrame");
     	
-    	FindObjectThread mFindObjectThread = new FindObjectThread();
-    	
-    	if(!mFindObjectThread.isRun()){
+    	if(!isRunThread){
+	    	FindObjectThread mFindObjectThread = new FindObjectThread();
     		mFindObjectThread.setInputFrame(inputFrame);
     		mFindObjectThread.start();
-    	}
+	    }
     	
         return inputFrame;
     }
@@ -184,5 +192,13 @@ public class MainActivity extends Activity implements CvCameraViewListener {
 			setRun(false);	
 		}
     }
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		if(v.getId() == R.id.tutorial1_activity_java_surface_view){
+			camera.autoFocus(null);
+		}
+	}
 
 }
