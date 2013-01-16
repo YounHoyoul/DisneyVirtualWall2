@@ -70,16 +70,18 @@ containing a value of this type.
         public static final int back=0x7f040001;
         public static final int front=0x7f040002;
         public static final int layout=0x7f040005;
-        public static final int menu_settings=0x7f040008;
+        public static final int menu_settings=0x7f040009;
         public static final int player=0x7f040006;
         public static final int target=0x7f040004;
         public static final int tutorial1_activity_java_surface_view=0x7f040003;
+        public static final int webview=0x7f040008;
         public static final int youtube_view=0x7f040007;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
         public static final int fullscreen_demo=0x7f030001;
         public static final int playerview_demo=0x7f030002;
+        public static final int webview_main=0x7f030003;
     }
     public static final class menu {
         public static final int activity_main=0x7f070000;

@@ -31,6 +31,12 @@
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
             <action android:name="android.intent.action.VIEW" />
         </activity>
+        
+        <activity
+            android:name="com.tcs.disneyvirtualwall2.ProductWebViewActivity"
+            android:screenOrientation="portrait">
+            <action android:name="android.intent.action.VIEW" />
+        </activity>
     </application>
 	
     <supports-screens android:resizeable="true"
@@ -40,10 +46,12 @@
                       android:anyDensity="true" />
     
     <uses-permission android:name="android.permission.CAMERA"/>
-	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.INTERNET"/>
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-feature android:name="android.hardware.camera" android:required="true"/>
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="true"/>
+    <!--
     <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.front.autofocus" android:required="false"/>
+    -->
 </manifest>

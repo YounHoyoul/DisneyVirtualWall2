@@ -36,17 +36,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MatchImageUtil {
-	private static final String TAG = "CAMERA::Activity";
+	private static final String TAG = "DISNEYVIRTUALWALL::Activity";
 	private static final boolean D = false;
+	
 	private static final int BOUNDARY = 35;
-	private static final double THRESHOLD = 50.0;
+	private static final double THRESHOLD = 55.0;
 	private static final boolean CACHED = true;
 	
 	private static Mat mSceneDescriptors = null;
 	
 	private static HashMap<String, String> mCachedMap = new HashMap<String,String>();
 	
-	private static int [] mResources = new int[]{
+	public static int [] mResources = new int[]{
 		R.drawable.disney_sample_1_landscape_80,
 		R.drawable.disney_sample_2_landscape_80,
 		R.drawable.disney_sample_3_landscape_80,
@@ -55,40 +56,7 @@ public class MatchImageUtil {
 		R.drawable.disney_new_sample_1,
 		R.drawable.disney_new_sample_2,
 		R.drawable.disney_new_sample_3,
-		R.drawable.disney_new_sample_4
-		
-		//R.drawable.disney_sample_1_portrait,
-		//R.drawable.disney_sample_2_portrait,
-		//R.drawable.disney_sample_3_portrait,
-		//R.drawable.disney_sample_4_portrait,
-		
-		//R.drawable.disney_sample_1_portrait_50,
-		//R.drawable.disney_sample_2_portrait_50,
-		//R.drawable.disney_sample_3_portrait_50,
-		//R.drawable.disney_sample_4_portrait_50
-	};
-
-	
-	public static int [] mResources2 = new int[]{
-		R.drawable.disney_sample_1_landscape_80,
-		R.drawable.disney_sample_2_landscape_80,
-		R.drawable.disney_sample_3_landscape_80,
-		R.drawable.disney_sample_4_landscape_80,
-		
-		R.drawable.disney_new_sample_1,
-		R.drawable.disney_new_sample_2,
-		R.drawable.disney_new_sample_3,
-		R.drawable.disney_new_sample_4
-		
-		//R.drawable.disney_sample_1_landscape,
-		//R.drawable.disney_sample_2_landscape,
-		//R.drawable.disney_sample_3_landscape,
-		//R.drawable.disney_sample_4_landscape,
-				
-		//R.drawable.disney_sample_1_landscape_50,
-		//R.drawable.disney_sample_2_landscape_50,
-		//R.drawable.disney_sample_3_landscape_50,
-		//R.drawable.disney_sample_4_landscape_50
+		R.drawable.disney_new_sample_4		
 	};
 	
 	private Activity mctx = null;
@@ -98,9 +66,8 @@ public class MatchImageUtil {
 	}
 	
 	public int findObject(Mat secenMat){
-		
-		boolean isPortrait = false;
-		int [] res = mResources2;
+
+		int [] res = mResources;
 		
 		Mat src = new Mat();
     	Mat target = new Mat();
@@ -131,12 +98,16 @@ public class MatchImageUtil {
   	       	
     		//Log.v(TAG,"check cached = " + isCached(i,isPortrait));
     		
-    		if(!isCached(i,isPortrait)){
+    		if(!isCached(i)){
     			Bitmap input2 = scaleAndTrun(BitmapFactory.decodeResource(mctx.getResources(), res[i]));
   	       		Utils.bitmapToMat(input2, target);
-  	       		matTrain = getTrainDescriptor(target,i,isPortrait);
+  	       		matTrain = getTrainDescriptor(target,i);
     		}else{
-    			matTrain = getTrainDescriptor(null,i,isPortrait);
+    			try{
+    				matTrain = getCachedTrainDescriptor(i);
+    			}catch(Exception e){
+    				return -1;
+    			}
     		}
     		
   	       	double nMatchRate = match(matScene,matTrain);
@@ -151,20 +122,11 @@ public class MatchImageUtil {
   	       	}
     	}
     	
-    	if(D) Log.v(TAG, "i="+maxNdx+",rate="+maxRate);
-    	
+    	if(D) Log.v(TAG, "i="+maxNdx+",rate="+maxRate);    	
     	if(D) endTime = (new Date()).getTime();
-    	
-    	//ImageView imageScene = (ImageView)mctx.findViewById(R.id.secen);
-    	//ImageView imageTrain = (ImageView)mctx.findViewById(R.id.target);
-    	
-    	//imageScene.setImageBitmap(sceneImg);
-    	//imageTrain.setImageBitmap(scaleAndTrun(BitmapFactory.decodeResource(mctx.getResources(), res[maxNdx])));
-    	
     	if(D) Log.v(TAG,"execute time = "+(endTime-startTime));
     	
     	return ( maxRate > THRESHOLD ? maxNdx : -1 ) ;
-		
 	}
 	
 	private Mat getSecenDescriptor(Mat srcMat){
@@ -190,22 +152,110 @@ public class MatchImageUtil {
 		return mSceneDescriptors;
 	}
 	
-	private boolean isCached(int i,boolean isPortrait){
+	private boolean isCached(int i){
 		if(CACHED){
-			String key = "mat_"+i+"_";
-			if(isPortrait){
-				key += "port";
-			}else{
-				key += "land";
-			}
+			String key = "mat_"+i+"_land";
 			return mCachedMap.containsKey(key);
 		}else{
 			return false;
 		}
 	}
 	
-	private Mat getTrainDescriptor(Mat targetMat,int i,boolean isPortrait){
+	public void loadCachedFiles(){
+		
+		for(int i = 0 ;i < mResources.length ; i++){
+			try{
+				Mat target = new Mat();
+				if(!isCached(i)){
+					Bitmap input2 = scaleAndTrun(BitmapFactory.decodeResource(mctx.getResources(), mResources[i]));
+			       		Utils.bitmapToMat(input2, target);
+			       		getTrainDescriptor(target,i);
+				}else{
+					try{
+						 getCachedTrainDescriptor(i);
+					}catch(Exception e){}
+				}
+			}catch(Exception e){}
+		}
+		
+	}
+	
+	private Mat getCachedTrainDescriptor(int i) throws IOException{
+		if(CACHED){
+			try{
+				String key = "mat_"+i+"_land";
+				
+				String data = "";
+				if(mCachedMap.containsKey(key)){
+					if(D) Log.v(TAG,"cached hash are used now.");
+					data = mCachedMap.get(key);
+				}else{
+					if(D) Log.v(TAG,"cached files are used now.");
+					
+					String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
+					
+					File dir = new File(extStorageDirectory, "tcs");
+					if(!dir.exists()){
+						dir.mkdir();
+					}
+					
+					File file = new File(extStorageDirectory, "tcs/disney_mat_"+i+"_landscape.txt");
+
+					if(file.exists()){
+					
+						FileInputStream fIn = new FileInputStream(file);
+				        InputStreamReader isr = new InputStreamReader(fIn);
+				        
+				        char[] inputBuffer = new char[(int) file.length()];
+				        isr.read(inputBuffer);
+				        isr.close();
+				        
+				        data = new String(inputBuffer);
+				        mCachedMap.put(key, data);
+				        
+					}
+				}
+				
+				if(!data.equals("")){
+			        String base64="";
+			        int type,cols,rows;
+			        
+			        String [] raw = data.split("\t");
+			        
+			        if(raw.length == 4){
+			        	rows = Integer.parseInt(raw[0]);
+			        	cols = Integer.parseInt(raw[1]);
+			        	type = Integer.parseInt(raw[2]);
+			        	base64 = raw[3];
+			        	
+				        byte [] buff  = Base64.decode(base64, Base64.DEFAULT);
+				        Mat trainDescriptors = new Mat(rows,cols,type);
+				        trainDescriptors.put(0, 0, buff);
+				        
+				        return trainDescriptors;
+			        }
+				}
+		    }catch(IOException e){
+		    	
+		    }
+		}
+		return null;
+	}
+	
+	private Mat getTrainDescriptor(Mat targetMat,int i){
 		//Load From File.
+		if(CACHED){
+			try{
+				Mat retMat = getCachedTrainDescriptor(i);
+				if(retMat != null){
+					return retMat;
+				}
+		    }catch(IOException e){
+		    	
+		    }
+		}
+		
+		//Making the cache files for Mat.
 		String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
 		
 		File dir = new File(extStorageDirectory, "tcs");
@@ -214,60 +264,8 @@ public class MatchImageUtil {
 		}
 		
 		File file = null;
-		if(!isPortrait){
-			file = new File(extStorageDirectory, "tcs/disney_mat_"+i+"_landscape.txt");
-		}else{
-			file = new File(extStorageDirectory, "tcs/disney_mat_"+i+"_portrait.txt");
-		}
-		
-		String key = "mat_"+i+"_";
-		if(isPortrait){
-			key += "port";
-		}else{
-			key += "land";
-		}
-		
-		if(CACHED){
-			try{
-				String data = "";
-				if(mCachedMap.containsKey(key)){
-					//Log.v(TAG,"cached hash are used now.");
-					data = mCachedMap.get(key);
-				}else if(file.exists() && file.length() > 0){
-					//Log.v(TAG,"cached files are used now.");
-					
-					FileInputStream fIn = new FileInputStream(file);
-			        InputStreamReader isr = new InputStreamReader(fIn);
-			        
-			        char[] inputBuffer = new char[(int) file.length()];
-			        isr.read(inputBuffer);
-			        isr.close();
-			        
-			        data = new String(inputBuffer);
-			        mCachedMap.put(key, data);
-				}
-				
-		        String base64="";
-		        int type,cols,rows;
-		        
-		        String [] raw = data.split("\t");
-		        
-		        if(raw.length == 4){
-		        	rows = Integer.parseInt(raw[0]);
-		        	cols = Integer.parseInt(raw[1]);
-		        	type = Integer.parseInt(raw[2]);
-		        	base64 = raw[3];
-		        	
-			        byte [] buff  = Base64.decode(base64, Base64.DEFAULT);
-			        Mat trainDescriptors = new Mat(rows,cols,type);
-			        trainDescriptors.put(0, 0, buff);
-			        
-			        return trainDescriptors;
-		        }
-		    }catch(IOException e){
-		    	
-		    }
-		}
+		file = new File(extStorageDirectory, "tcs/disney_mat_"+i+"_landscape.txt");
+		String key = "mat_"+i+"_land";
 		
 		FeatureDetector detector = FeatureDetector.create(FeatureDetector.FAST);
         DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.BRIEF);
@@ -291,9 +289,7 @@ public class MatchImageUtil {
 		    String base64 = Base64.encodeToString(buff, Base64.DEFAULT);
 		    
 		    try{
-				//String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
 				OutputStream outStream = null;
-				//File file = new File(extStorageDirectory, "mat_"+i+".txt");
 			    outStream = new FileOutputStream(file);
 			    OutputStreamWriter osw = new OutputStreamWriter(outStream); 
 			    

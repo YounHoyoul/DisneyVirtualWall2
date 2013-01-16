@@ -12,7 +12,10 @@ import com.tcs.disneyvirtualwall2.youtube.PlayerViewDemoActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.annotation.SuppressLint;
+import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
@@ -23,32 +26,31 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements CvCameraViewListener, OnClickListener {
 
-	private static final String TAG = "OCVSample::Activity";
+	private static final String TAG = "DISNEYVIRTUALWALL::Activity";
+	private static final boolean D = false;
 	
-    private CameraBridgeViewBase mOpenCvCameraView;
-    //private boolean              mIsJavaCamera = true;
-    //private MenuItem             mItemSwitchCamera = null;
     
-    private MatchImageUtil 		mMatchImageUtil = null;
+    private CameraBridgeViewBase 	mOpenCvCameraView = null;
+    private MatchImageUtil 			mMatchImageUtil = null;
     
-    private static boolean isRunThread = false;
-    
-    private Camera camera;
+    private Camera 					mCamera = null;
     
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
-                    Log.i(TAG, "OpenCV loaded successfully");
+                case LoaderCallbackInterface.SUCCESS:{
+                    if(D) Log.i(TAG, "OpenCV loaded successfully");
+                    mMatchImageUtil.loadCachedFiles();
                     mOpenCvCameraView.enableView();
+                    mProgressDialog.dismiss();
+                    
                 } break;
-                default:
-                {
+                default:{
                     super.onManagerConnected(status);
                 } break;
             }
@@ -56,30 +58,39 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
     };
 
     public MainActivity() {
-        Log.i(TAG, "Instantiated new " + this.getClass());
+        if(D) Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "called onCreate");
+        if(D) Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_main);
-
+        
+        //createProgressDialog();
+        
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.tutorial1_activity_java_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        if(!D){
+        	android.view.ViewGroup.LayoutParams params = mOpenCvCameraView.getLayoutParams();
+        	params.width = LayoutParams.FILL_PARENT;
+        	params.height = LayoutParams.FILL_PARENT;
+        	mOpenCvCameraView.setLayoutParams(params);
+        }
         mOpenCvCameraView.setCvCameraViewListener(this);
         mMatchImageUtil = new MatchImageUtil(this);
         
-        
         mOpenCvCameraView.setOnClickListener(this);
+        
         //Intent intent = new Intent(MainActivity.this,PlayerViewDemoActivity.class);
 		//intent.putExtra("video_uri", "3dnxG6fxXi8");
     	//startActivity(intent);
         
-        camera = Camera.open();
+        
+        
     }
 
     @Override
@@ -94,6 +105,7 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
     public void onResume()
     {
         super.onResume();
+        createProgressDialog();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
     }
 
@@ -123,42 +135,83 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
         return inputFrame;
     }
     
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		if(v.getId() == R.id.tutorial1_activity_java_surface_view){
+			try{
+                if(mCamera == null){
+                	mCamera = Camera.open();
+                }
+				mCamera.autoFocus(null);
+			}catch(Exception e){}
+		}
+	}
+	
+	
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		mLastFindIndex = -1;
+	}
+
+
+
+	///////////////////////////////////////////////////////////////////////////
+	private ProgressDialog mProgressDialog;
+	private void createProgressDialog(){
+		mProgressDialog = ProgressDialog.show(MainActivity.this, "", "Loading...",true,false);
+	}
+	
+    ///////////////////////////////////////////////////////////////////////////
+    private static int mLastFindIndex = -1;
+    private static boolean isRunThread = false;
     
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    final Handler handler = new Handler() {
+	final Handler handler = new Handler() {
         public void handleMessage(Message msg)
         {
 			String message = null;
 			
 			if(msg.what == -1 || msg.what >= 1000){
-				message = "수행 실패";
+				message = "Fail to find";
 			}else{
-				message = "수행 완료 - " + msg.what;
+				message = "Found - " + msg.what;
 				
-		    	ImageView imageTrain = (ImageView)findViewById(R.id.target);
-		    	imageTrain.setImageBitmap(BitmapFactory.decodeResource(getResources(), MatchImageUtil.mResources2[msg.what]));
-		    	
-		    	if(msg.what == 7){
-  	     			Intent intent = new Intent(MainActivity.this,PlayerViewDemoActivity.class);
-  	     			intent.putExtra("video_uri", "ZRlCulV7r-I");
-  	     	    	startActivity(intent);
-		    	}
-		    	
-		    	// 메시지 출력
-	            // Toast.makeText(Sample1Java.this, message, Toast.LENGTH_SHORT).show();
+				if(mLastFindIndex != msg.what){
+					
+					if(D){
+						ImageView imageTrain = (ImageView)findViewById(R.id.target);
+						imageTrain.setImageBitmap(BitmapFactory.decodeResource(getResources(), MatchImageUtil.mResources[msg.what]));
+					}else{
+						// 메시지 출력
+			            Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+			            
+			            if(msg.what != 7){
+				            Intent intent = new Intent(MainActivity.this,ProductWebViewActivity.class);
+				            intent.putExtra("image_index", msg.what);
+				            //MainActivity.this.startActivity(intent);
+				            startActivityForResult(intent, 0);
+			            }else{
+		  	     			Intent intent = new Intent(MainActivity.this,PlayerViewDemoActivity.class);
+		  	     			intent.putExtra("video_uri", "ZRlCulV7r-I");
+		  	     	    	//startActivity(intent);
+		  	     	    	startActivityForResult(intent, 0);
+				    	}
+			            
+					}
+					
+			    	mLastFindIndex = msg.what;
+			    	
+				}
 			}
         }
     };
     
     private class FindObjectThread extends Thread implements Runnable{
 
-    	private boolean isRun = false;
     	private Mat mInputFrame = null;
-    	
-		public boolean isRun() {
-			isRun = isRunThread;
-			return isRun;
-		}
 
 		public Mat getInputFrame() {
 			return mInputFrame;
@@ -169,7 +222,6 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
 		}
 
 		public void setRun(boolean isRun) {
-			this.isRun = isRun;
 			isRunThread = isRun;
 		}
 
@@ -192,13 +244,4 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
 			setRun(false);	
 		}
     }
-
-	@Override
-	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		if(v.getId() == R.id.tutorial1_activity_java_surface_view){
-			camera.autoFocus(null);
-		}
-	}
-
 }

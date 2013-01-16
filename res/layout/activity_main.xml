@@ -3,7 +3,8 @@
     xmlns:opencv="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="#ffffff">
         
     <org.opencv.android.JavaCameraView
         android:layout_width="0px"
@@ -11,7 +12,8 @@
         android:layout_height="fill_parent"
         android:visibility="gone"
         android:id="@+id/tutorial1_activity_java_surface_view"
-        opencv:camera_id="any" />
+        opencv:camera_id="any"
+      	/>
 
     <ImageView
         android:layout_width="0px"
