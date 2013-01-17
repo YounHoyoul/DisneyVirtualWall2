@@ -13,9 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfKeyPoint;
+import org.opencv.core.Point;
+import org.opencv.core.Size;
 import org.opencv.features2d.DMatch;
 import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
@@ -40,7 +43,9 @@ public class MatchImageUtil {
 	private static final boolean D = false;
 	
 	private static final int BOUNDARY = 35;
-	private static final double THRESHOLD = 55.0;
+	private static final double THRESHOLD = 85.0;
+	private static final double REVERSE_THRESHOLD = 25.0;
+	private static final int [] DEDUCT = new int[]{25,45,60,70};
 	private static final boolean CACHED = true;
 	
 	private static Mat mSceneDescriptors = null;
@@ -65,6 +70,31 @@ public class MatchImageUtil {
 		mctx = ctx;
 	}
 	
+	private Mat preProcess(Mat secenMat){
+		
+		Mat mIntermediateMat = new Mat();
+    	secenMat.copyTo(mIntermediateMat);
+    	//Imgproc.GaussianBlur(secenMat, dst, new Size(11,11), 0);
+		
+		// 1) Apply gaussian blur to remove noise
+		Imgproc.GaussianBlur(secenMat, mIntermediateMat, new Size(11,11), 0);
+
+		// 2) AdaptiveThreshold -> classify as either black or white
+		//Imgproc.adaptiveThreshold(mIntermediateMat, mIntermediateMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 5, 2);
+
+		// 3) Invert the image -> so most of the image is black
+		//Core.bitwise_not(mIntermediateMat, mIntermediateMat);
+
+		// 4) Dilate -> fill the image using the MORPH_DILATE
+		Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_DILATE, new Size(3,3), new Point(1,1));
+		Imgproc.dilate(mIntermediateMat, mIntermediateMat, kernel);
+		
+		return mIntermediateMat;
+	}
+	
+	private static int nPrevIndex = -1;
+	private static int nConsequenceHit = 0;
+	
 	public int findObject(Mat secenMat){
 
 		int [] res = mResources;
@@ -72,8 +102,9 @@ public class MatchImageUtil {
 		Mat src = new Mat();
     	Mat target = new Mat();
     	
-    	Bitmap sceneImg = Bitmap.createBitmap( secenMat.cols(), secenMat.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(secenMat,sceneImg);
+    	Mat dst = preProcess(secenMat);
+    	Bitmap sceneImg = Bitmap.createBitmap( dst.cols(), dst.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(dst,sceneImg);
     	
         sceneImg = scaleAndTrun(sceneImg);
         
@@ -122,11 +153,42 @@ public class MatchImageUtil {
   	       	}
     	}
     	
-    	if(D) Log.v(TAG, "i="+maxNdx+",rate="+maxRate);    	
-    	if(D) endTime = (new Date()).getTime();
-    	if(D) Log.v(TAG,"execute time = "+(endTime-startTime));
+    	if(D){
+    		Log.v(TAG, "i="+maxNdx+",rate="+maxRate);
+    		Log.v(TAG, "nPrevIndex="+nPrevIndex);
+    		endTime = (new Date()).getTime();
+    		Log.v(TAG,"execute time = "+(endTime-startTime));
+    	}
     	
-    	return ( maxRate > THRESHOLD ? maxNdx : -1 ) ;
+    	if(maxNdx == nPrevIndex){
+    		nConsequenceHit++;	
+    	}else{
+    		nConsequenceHit = 0;
+    	}
+    	nConsequenceHit = Math.min(nConsequenceHit, DEDUCT.length - 1);
+    	nPrevIndex = maxNdx;
+    	
+    	if(maxRate > THRESHOLD - DEDUCT[nConsequenceHit] ){
+	    	double reverseRate = 0.0;
+	    	try{
+	    		reverseRate = match(getCachedTrainDescriptor(maxNdx),matScene);
+	    		if(D) Log.v(TAG,"reverseRate="+reverseRate);
+	    	}catch(Exception e){}
+	    	
+	    	if(reverseRate <= REVERSE_THRESHOLD){
+	    		nConsequenceHit = 0;
+	    		return -1;
+	    	}
+    	}
+    	
+    	if(D) Log.v(TAG, "nConsequenceHit="+nConsequenceHit);    	
+    	
+    	return ( maxRate > THRESHOLD - DEDUCT[nConsequenceHit] ? maxNdx : -1 ) ;
+	}
+	
+	public static void clearHit(){
+		nPrevIndex = -1;
+		nConsequenceHit = 0;
 	}
 	
 	private Mat getSecenDescriptor(Mat srcMat){
@@ -187,10 +249,10 @@ public class MatchImageUtil {
 				
 				String data = "";
 				if(mCachedMap.containsKey(key)){
-					if(D) Log.v(TAG,"cached hash are used now.");
+					//if(D) Log.v(TAG,"cached hash are used now.");
 					data = mCachedMap.get(key);
 				}else{
-					if(D) Log.v(TAG,"cached files are used now.");
+					//if(D) Log.v(TAG,"cached files are used now.");
 					
 					String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
 					
@@ -336,7 +398,7 @@ public class MatchImageUtil {
 		return (1.0  * good_matches.size() / rowCount) * 100.0;
 	}
 	
-    private Bitmap scaleAndTrun(Bitmap bm) {
+    public static Bitmap scaleAndTrun(Bitmap bm) {
 		int MAX_DIM = 200;
 		int w, h;
 		if (bm.getWidth() >= bm.getHeight()) {

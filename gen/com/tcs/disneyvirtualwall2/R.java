@@ -37,43 +37,44 @@ containing a value of this type.
         public static final int show_fps=0x7f010000;
     }
     public static final class drawable {
-        public static final int disney_new_sample_1=0x7f020000;
-        public static final int disney_new_sample_2=0x7f020001;
-        public static final int disney_new_sample_3=0x7f020002;
-        public static final int disney_new_sample_4=0x7f020003;
-        public static final int disney_sample_1_landscape=0x7f020004;
-        public static final int disney_sample_1_landscape_50=0x7f020005;
-        public static final int disney_sample_1_landscape_80=0x7f020006;
-        public static final int disney_sample_1_portrait=0x7f020007;
-        public static final int disney_sample_1_portrait_50=0x7f020008;
-        public static final int disney_sample_2_landscape=0x7f020009;
-        public static final int disney_sample_2_landscape_50=0x7f02000a;
-        public static final int disney_sample_2_landscape_80=0x7f02000b;
-        public static final int disney_sample_2_portrait=0x7f02000c;
-        public static final int disney_sample_2_portrait_50=0x7f02000d;
-        public static final int disney_sample_3_landscape=0x7f02000e;
-        public static final int disney_sample_3_landscape_50=0x7f02000f;
-        public static final int disney_sample_3_landscape_80=0x7f020010;
-        public static final int disney_sample_3_portrait=0x7f020011;
-        public static final int disney_sample_3_portrait_50=0x7f020012;
-        public static final int disney_sample_4_landscape=0x7f020013;
-        public static final int disney_sample_4_landscape_50=0x7f020014;
-        public static final int disney_sample_4_landscape_80=0x7f020015;
-        public static final int disney_sample_4_portrait=0x7f020016;
-        public static final int disney_sample_4_portrait_50=0x7f020017;
-        public static final int goto_movie=0x7f020018;
-        public static final int ic_launcher=0x7f020019;
-        public static final int icon=0x7f02001a;
+        public static final int check_icon=0x7f020000;
+        public static final int disney_new_sample_1=0x7f020001;
+        public static final int disney_new_sample_2=0x7f020002;
+        public static final int disney_new_sample_3=0x7f020003;
+        public static final int disney_new_sample_4=0x7f020004;
+        public static final int disney_sample_1_landscape=0x7f020005;
+        public static final int disney_sample_1_landscape_50=0x7f020006;
+        public static final int disney_sample_1_landscape_80=0x7f020007;
+        public static final int disney_sample_1_portrait=0x7f020008;
+        public static final int disney_sample_1_portrait_50=0x7f020009;
+        public static final int disney_sample_2_landscape=0x7f02000a;
+        public static final int disney_sample_2_landscape_50=0x7f02000b;
+        public static final int disney_sample_2_landscape_80=0x7f02000c;
+        public static final int disney_sample_2_portrait=0x7f02000d;
+        public static final int disney_sample_2_portrait_50=0x7f02000e;
+        public static final int disney_sample_3_landscape=0x7f02000f;
+        public static final int disney_sample_3_landscape_50=0x7f020010;
+        public static final int disney_sample_3_landscape_80=0x7f020011;
+        public static final int disney_sample_3_portrait=0x7f020012;
+        public static final int disney_sample_3_portrait_50=0x7f020013;
+        public static final int disney_sample_4_landscape=0x7f020014;
+        public static final int disney_sample_4_landscape_50=0x7f020015;
+        public static final int disney_sample_4_landscape_80=0x7f020016;
+        public static final int disney_sample_4_portrait=0x7f020017;
+        public static final int disney_sample_4_portrait_50=0x7f020018;
+        public static final int goto_movie=0x7f020019;
+        public static final int ic_launcher=0x7f02001a;
+        public static final int icon=0x7f02001b;
     }
     public static final class id {
         public static final int any=0x7f040000;
         public static final int back=0x7f040001;
         public static final int front=0x7f040002;
+        public static final int java_surface_view=0x7f040003;
         public static final int layout=0x7f040005;
         public static final int menu_settings=0x7f040009;
         public static final int player=0x7f040006;
         public static final int target=0x7f040004;
-        public static final int tutorial1_activity_java_surface_view=0x7f040003;
         public static final int webview=0x7f040008;
         public static final int youtube_view=0x7f040007;
     }
@@ -81,7 +82,8 @@ containing a value of this type.
         public static final int activity_main=0x7f030000;
         public static final int fullscreen_demo=0x7f030001;
         public static final int playerview_demo=0x7f030002;
-        public static final int webview_main=0x7f030003;
+        public static final int splash_main=0x7f030003;
+        public static final int webview_main=0x7f030004;
     }
     public static final class menu {
         public static final int activity_main=0x7f070000;
