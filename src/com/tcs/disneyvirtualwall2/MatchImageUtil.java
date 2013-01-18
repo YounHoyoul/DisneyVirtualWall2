@@ -40,7 +40,7 @@ import android.widget.TextView;
 
 public class MatchImageUtil {
 	private static final String TAG = "DISNEYVIRTUALWALL::Activity";
-	private static final boolean D = false;
+	private static final boolean D = true;
 	
 	private static final int BOUNDARY = 35;
 	private static final double THRESHOLD = 85.0;
@@ -61,7 +61,10 @@ public class MatchImageUtil {
 		R.drawable.disney_new_sample_1,
 		R.drawable.disney_new_sample_2,
 		R.drawable.disney_new_sample_3,
-		R.drawable.disney_new_sample_4		
+		R.drawable.disney_new_sample_4,
+		
+		R.drawable.sample_t,
+		R.drawable.sample_g
 	};
 	
 	private Activity mctx = null;
@@ -143,6 +146,8 @@ public class MatchImageUtil {
     		
   	       	double nMatchRate = match(matScene,matTrain);
   	       	
+  	       	if(D) Log.v(TAG,"i="+i+",rate="+nMatchRate);
+
   	       	if(maxRate <= nMatchRate){
   	       		maxRate = nMatchRate;
   	       		maxNdx = i;
@@ -168,7 +173,7 @@ public class MatchImageUtil {
     	nConsequenceHit = Math.min(nConsequenceHit, DEDUCT.length - 1);
     	nPrevIndex = maxNdx;
     	
-    	if(maxRate > THRESHOLD - DEDUCT[nConsequenceHit] ){
+    	if(maxRate > THRESHOLD - DEDUCT[nConsequenceHit] && maxNdx < 8 ){
 	    	double reverseRate = 0.0;
 	    	try{
 	    		reverseRate = match(getCachedTrainDescriptor(maxNdx),matScene);

@@ -65,6 +65,8 @@ containing a value of this type.
         public static final int goto_movie=0x7f020019;
         public static final int ic_launcher=0x7f02001a;
         public static final int icon=0x7f02001b;
+        public static final int sample_g=0x7f02001c;
+        public static final int sample_t=0x7f02001d;
     }
     public static final class id {
         public static final int any=0x7f040000;

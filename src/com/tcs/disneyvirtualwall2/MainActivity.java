@@ -152,13 +152,19 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
     }
     
     private static Mat mCheckIcon = null;
+    private static int mBarCount  = 0;
+    private static boolean mBarReverse = false;
+    private static boolean mIsBarDraw = true;
+    
+    private static int MARGIN = 20;
+	
     
     private Mat drawLines(Mat inputFrame){
     	
-    	if(mIsFound){
+    	int row = inputFrame.rows();
+    	int col = inputFrame.cols();
     	
-	    	int row = inputFrame.rows();
-	    	int col = inputFrame.cols();
+    	if(mIsFound){
 	    	
 	    	//Core.line(inputFrame, new Point(10,10), new Point(10,row-10), new Scalar(0, 255, 0, 255), 3);
 	    	//Core.line(inputFrame, new Point(10,10), new Point(col-10,10), new Scalar(0, 255, 0, 255), 3);
@@ -181,6 +187,34 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
 	    	
     	}
     	
+    	int baseSize = (row>col?col:row)/2-(row>col?col:row)/2/5;
+    	Core.rectangle(inputFrame, new Point(col/2-baseSize,row/2-baseSize), new Point(col/2+baseSize,row/2+baseSize),  new Scalar(255, 255, 255, 255), 1);
+    	Core.line(inputFrame, new Point(col/2-5,row/2), new Point(col/2+5,row/2), new Scalar(255, 255, 255, 255), 1);
+    	Core.line(inputFrame, new Point(col/2,row/2-5), new Point(col/2,row/2+5), new Scalar(255, 255, 255, 255), 1);
+    	
+		if(mIsBarDraw){
+			
+    		if(mBarReverse){
+    			mBarCount -= 2;
+    		}else{
+    			mBarCount += 2;
+    		}
+    		
+    		if(!mBarReverse && mBarCount > row - 2 * MARGIN){
+    			mBarReverse = true;
+    		}
+    		
+    		if(mBarReverse && mBarCount < MARGIN){
+    			mBarReverse = false;
+    		}
+    		
+    		int curBarPosition = MARGIN + mBarCount;
+    		
+    		Core.line(inputFrame, new Point(0,curBarPosition), new Point(col,curBarPosition), new Scalar(0, 255, 255, 255), 2);
+
+		}
+    	
+    	
     	return inputFrame;
     }
     
@@ -199,12 +233,18 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// TODO Auto-generated method stub
-		super.onActivityResult(requestCode, resultCode, data);
+		
 		mLastFindIndex = -1;
 		mIsFound = false;
+		mBarCount = 0;
+		mIsBarDraw = true;
+		mBarReverse = false;
+		
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	///////////////////////////////////////////////////////////////////////////
+	/*
 	private Camera openFrontFacingCamera() {
 		
 	    int cameraCount = 0;
@@ -225,7 +265,8 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
 
 	    return cam;
 	}
-
+	*/
+	
 	///////////////////////////////////////////////////////////////////////////
 	private ProgressDialog mProgressDialog;
 	private void createProgressDialog(){
@@ -296,6 +337,7 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
 					
 					mMatchImageUtil.clearHit();
 					mIsFound = true;
+					mIsBarDraw = false;
 			    	mLastFindIndex = msg.what;
 			    	
 				}

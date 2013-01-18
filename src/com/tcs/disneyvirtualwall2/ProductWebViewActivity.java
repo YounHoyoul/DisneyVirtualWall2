@@ -20,6 +20,8 @@ public class ProductWebViewActivity extends Activity {
 			"http://27.50.87.100/~thecreat/wp-content/uploads/2013/01/disney_new_sample_2.png",
 			"http://27.50.87.100/~thecreat/wp-content/uploads/2013/01/disney_new_sample_3.png",
 			"http://27.50.87.100/~thecreat/wp-content/uploads/2013/01/disney_new_sample_4.png",
+			"http://27.50.87.100/~thecreat/wp-content/uploads/2013/01/sample_t.png",
+			"http://27.50.87.100/~thecreat/wp-content/uploads/2013/01/sample_g.png",
 		};
 	
     @Override
