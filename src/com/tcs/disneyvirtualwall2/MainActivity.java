@@ -142,7 +142,9 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
     	
     	if(!isRunThread && !mIsFound){
 	    	FindObjectThread mFindObjectThread = new FindObjectThread();
-    		mFindObjectThread.setInputFrame(inputFrame);
+	    	Mat tmpFrame = inputFrame.clone();
+    		//mFindObjectThread.setInputFrame(inputFrame);
+	    	mFindObjectThread.setInputFrame(tmpFrame);
     		mFindObjectThread.start();
 	    }
     	
@@ -287,12 +289,19 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
 			
 			if(msg.what == -1 || msg.what >= 1000){
 				message = "Fail to find";
+				if(D){
+					ImageView imageSample = (ImageView)findViewById(R.id.sample);
+					imageSample.setImageBitmap(MatchImageUtil.mSceneImg);
+				}
 			}else{
 				message = "Found - " + msg.what;
 				
 				if(mLastFindIndex != msg.what){
 					
 					if(D){
+						ImageView imageSample = (ImageView)findViewById(R.id.sample);
+						imageSample.setImageBitmap(MatchImageUtil.mSceneImg);
+						
 						ImageView imageTrain = (ImageView)findViewById(R.id.target);
 						imageTrain.setImageBitmap(BitmapFactory.decodeResource(getResources(), MatchImageUtil.mResources[msg.what]));
 					}else{
@@ -332,6 +341,10 @@ public class MainActivity extends Activity implements CvCameraViewListener, OnCl
 		            	@Override     
 		            	public void run(){
 		            		mIsFound = false;
+		            		if(D){
+		            			mIsBarDraw = true;
+		    			    	mLastFindIndex = -1;
+		            		}
 		            	}
 		            }, 800);
 					

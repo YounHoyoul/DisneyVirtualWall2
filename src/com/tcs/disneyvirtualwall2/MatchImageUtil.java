@@ -18,6 +18,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.features2d.DMatch;
 import org.opencv.features2d.DescriptorExtractor;
@@ -43,7 +44,7 @@ public class MatchImageUtil {
 	private static final boolean D = false;
 	
 	private static final int BOUNDARY = 35;
-	private static final double THRESHOLD = 85.0;
+	private static final double THRESHOLD = 75.0;
 	private static final double REVERSE_THRESHOLD = 25.0;
 	private static final int [] DEDUCT = new int[]{25,45,60,70};
 	private static final boolean CACHED = true;
@@ -58,13 +59,18 @@ public class MatchImageUtil {
 		R.drawable.disney_sample_3_landscape_80,
 		R.drawable.disney_sample_4_landscape_80,
 		
+		//R.drawable.disney_sample_1_landscape_40,
+		//R.drawable.disney_sample_2_landscape_40,
+		//R.drawable.disney_sample_3_landscape_40,
+		//R.drawable.disney_sample_4_landscape_40,
+		
 		R.drawable.disney_new_sample_1,
 		R.drawable.disney_new_sample_2,
 		R.drawable.disney_new_sample_3,
-		R.drawable.disney_new_sample_4,
+		R.drawable.disney_new_sample_4
 		
-		R.drawable.sample_t,
-		R.drawable.sample_g
+		//R.drawable.sample_t,
+		//R.drawable.sample_g
 	};
 	
 	private Activity mctx = null;
@@ -73,15 +79,22 @@ public class MatchImageUtil {
 		mctx = ctx;
 	}
 	
-	private Mat preProcess(Mat secenMat){
+	private Mat preProcess(Mat sceneMat){
 		
 		Mat mIntermediateMat = new Mat();
-    	secenMat.copyTo(mIntermediateMat);
-    	//Imgproc.GaussianBlur(secenMat, dst, new Size(11,11), 0);
 		
+    	int row = sceneMat.rows();
+    	int col = sceneMat.cols();
+    	
+    	int radius = (row>col?col:row)/2*4/5;
+    	//Core.circle(inputFrame, new Point(col/2,row/2), radius, new Scalar(0, 255, 0, 255), 15);
+    	Mat subArea = sceneMat.submat(row/2-radius,row/2+radius,col/2-radius,col/2+radius);
+    	sceneMat.copyTo(mIntermediateMat);
+    	
 		// 1) Apply gaussian blur to remove noise
-		Imgproc.GaussianBlur(secenMat, mIntermediateMat, new Size(11,11), 0);
-
+		//Imgproc.GaussianBlur(sceneMat, mIntermediateMat, new Size(11,11), 0);
+    	Imgproc.GaussianBlur(subArea, mIntermediateMat, new Size(11,11), 0);
+    	
 		// 2) AdaptiveThreshold -> classify as either black or white
 		//Imgproc.adaptiveThreshold(mIntermediateMat, mIntermediateMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 5, 2);
 
@@ -97,6 +110,7 @@ public class MatchImageUtil {
 	
 	private static int nPrevIndex = -1;
 	private static int nConsequenceHit = 0;
+	public static Bitmap mSceneImg = null;
 	
 	public int findObject(Mat secenMat){
 
@@ -109,11 +123,11 @@ public class MatchImageUtil {
     	Bitmap sceneImg = Bitmap.createBitmap( dst.cols(), dst.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(dst,sceneImg);
     	
-        sceneImg = scaleAndTrun(sceneImg);
+        mSceneImg = scaleAndTrun(sceneImg);
         
     	BitmapFactory.Options options = new BitmapFactory.Options();
     	options.inPreferredConfig = Config.ARGB_8888;
-    	Utils.bitmapToMat(sceneImg, src);
+    	Utils.bitmapToMat(mSceneImg, src);
     	
     	mSceneDescriptors = null;
     	
@@ -145,9 +159,6 @@ public class MatchImageUtil {
     		}
     		
   	       	double nMatchRate = match(matScene,matTrain);
-  	       	
-  	       	if(D) Log.v(TAG,"i="+i+",rate="+nMatchRate);
-
   	       	if(maxRate <= nMatchRate){
   	       		maxRate = nMatchRate;
   	       		maxNdx = i;
@@ -156,6 +167,7 @@ public class MatchImageUtil {
   	       	if(maxRate > THRESHOLD){
   	       		break;
   	       	}
+  	       	
     	}
     	
     	if(D){
@@ -180,7 +192,8 @@ public class MatchImageUtil {
 	    		if(D) Log.v(TAG,"reverseRate="+reverseRate);
 	    	}catch(Exception e){}
 	    	
-	    	if(reverseRate <= REVERSE_THRESHOLD){
+	    	//if(reverseRate <= REVERSE_THRESHOLD){
+	    	if(reverseRate < maxRate * 0.5){
 	    		nConsequenceHit = 0;
 	    		return -1;
 	    	}
